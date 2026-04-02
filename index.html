@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a1628">
+<title>AlugaFácil</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   RESET & TOKENS
+══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --ocean:       #0077B6;
+  --ocean-mid:   #0096C7;
+  --ocean-light: #00B4D8;
+  --ocean-pale:  #90E0EF;
+  --sand:        #CAF0F8;
+  --coral:       #F4743B;
+  --coral-dark:  #C1571F;
+  --green:       #06D6A0;
+  --green-dark:  #05a87f;
+  --yellow:      #FFD166;
+  --red:         #EF476F;
+  --bg:          #F0F6FA;
+  --surface:     #FFFFFF;
+  --surface2:    #F5F9FC;
+  --text:        #0D1B2A;
+  --text-2:      #3D5166;
+  --text-3:      #7A90A4;
+  --border:      #D9E8F0;
+  --shadow-sm:   0 2px 8px rgba(0,100,160,0.08);
+  --shadow-md:   0 6px 24px rgba(0,100,160,0.12);
+  --shadow-lg:   0 16px 48px rgba(0,100,160,0.18);
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  22px;
+  --r-xl:  30px;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: #0a1628;
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════
+   PHONE WRAPPER
+══════════════════════════════════════════ */
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #0a1628 0%, #0d2845 60%, #0077B6 100%);
+  position: relative;
+}
+#root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 70% 20%, rgba(0,180,216,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(0,119,182,0.12) 0%, transparent 50%);
+}
+
+.phone-shell {
+  width: min(420px, 100vw);
+  height: min(860px, 100vh);
+  background: var(--bg);
+  border-radius: min(48px, 4vw);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* Status bar */
+.status-bar {
+  height: 44px;
+  background: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+}
+.status-bar .time { color: #fff; font-weight: 600; font-size: 14px; font-family: 'DM Sans', sans-serif; }
+.status-bar .icons { color: #fff; font-size: 13px; display: flex; gap: 6px; }
+
+/* ══════════════════════════════════════════
+   SCREEN SYSTEM
+══════════════════════════════════════════ */
+.app-body { flex: 1; overflow: hidden; position: relative; }
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(20px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  background: var(--bg);
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+
+.screen-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 80px;
+}
+.screen-scroll::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════════ */
+.bottom-nav {
+  height: 68px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-shrink: 0;
+  padding-bottom: 8px;
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  position: relative;
+}
+.nav-btn .nav-ico { font-size: 22px; transition: transform 0.2s; }
+.nav-btn .nav-lbl { font-size: 10px; font-weight: 500; color: var(--text-3); transition: color 0.2s; }
+.nav-btn.active .nav-lbl { color: var(--ocean); font-weight: 600; }
+.nav-btn.active .nav-ico { transform: translateY(-2px); }
+.nav-btn .nav-pip {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--ocean);
+  position: absolute;
+  bottom: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.nav-btn.active .nav-pip { opacity: 1; }
+
+/* ══════════════════════════════════════════
+   HEADER HERO
+══════════════════════════════════════════ */
+.hero {
+  background: linear-gradient(145deg, #0a1628 0%, #0d2845 50%, #0055a5 100%);
+  padding: 20px 20px 30px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: -20px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0,180,216,0.2), transparent 70%);
+  border-radius: 50%;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -40px;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0,119,182,0.25), transparent 70%);
+  border-radius: 50%;
+}
+.hero-inner { position: relative; z-index: 1; }
+.hero-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #fff; letter-spacing: -0.5px; }
+.logo em { color: var(--ocean-light); font-style: normal; }
+.hero-actions { display: flex; gap: 8px; align-items: center; }
+.sync-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 11px; color: rgba(255,255,255,0.85); font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sync-chip:hover { background: rgba(255,255,255,0.18); }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.sync-chip.syncing .sync-dot { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.avatar-btn {
+  width: 36px; height: 36px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--ocean-light), var(--ocean));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 700; color: #fff; font-size: 14px;
+  border: 2px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+}
+.hero-greeting { color: rgba(255,255,255,0.55); font-size: 12px; margin-bottom: 2px; }
+.hero-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; color: #fff; line-height: 1.1; }
+.hero-sub { color: var(--ocean-light); font-size: 13px; margin-top: 4px; }
+
+/* STAT PILLS */
+.stat-row { display: flex; gap: 8px; margin-top: 20px; }
+.stat-pill {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--r-md);
+  padding: 12px 10px;
+  text-align: center;
+}
+.stat-pill-val { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: #fff; }
+.stat-pill-val.g { color: var(--green); }
+.stat-pill-val.c { color: var(--coral); }
+.stat-pill-lbl { font-size: 9px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* ══════════════════════════════════════════
+   SECTION HEADING
+══════════════════════════════════════════ */
+.sec { padding: 16px 16px 0; }
+.sec-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.sec-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); }
+.sec-action { font-size: 12px; color: var(--ocean); font-weight: 600; cursor: pointer; }
+
+/* ══════════════════════════════════════════
+   CALENDAR STRIP
+══════════════════════════════════════════ */
+.cal-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.cal-strip::-webkit-scrollbar { display: none; }
+.cal-cell {
+  flex-shrink: 0;
+  width: 54px;
+  border-radius: var(--r-sm);
+  padding: 10px 4px;
+  text-align: center;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+.cal-cell:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.cal-cell.occ { background: linear-gradient(150deg, var(--ocean), var(--ocean-mid)); }
+.cal-cell.today { background: var(--surface); box-shadow: 0 0 0 2px var(--ocean), var(--shadow-sm); }
+.cal-cell.checkout { background: linear-gradient(150deg, var(--coral-dark), var(--coral)); }
+.cal-cell.checkin { background: linear-gradient(150deg, var(--green-dark), var(--green)); }
+.cal-n { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.3px; }
+.cal-cell.occ .cal-n, .cal-cell.checkout .cal-n, .cal-cell.checkin .cal-n { color: rgba(255,255,255,0.65); }
+.cal-d { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--text); }
+.cal-cell.occ .cal-d, .cal-cell.checkout .cal-d, .cal-cell.checkin .cal-d { color: #fff; }
+.cal-cell.today .cal-d { color: var(--ocean); }
+.cal-g { font-size: 8px; color: rgba(255,255,255,0.75); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-legend { display: flex; gap: 10px; margin-top: 10px; }
+.cal-leg-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-3); }
+.cal-leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ══════════════════════════════════════════
+   FILTER CHIPS
+══════════════════════════════════════════ */
+.filter-row { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; }
+.filter-row::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip.on { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+
+/* ══════════════════════════════════════════
+   RESERVA CARD
+══════════════════════════════════════════ */
+.res-card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.18s;
+  animation: fadeSlide 0.35s ease both;
+}
+.res-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.res-card:active { transform: scale(0.98); }
+@keyframes fadeSlide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.res-top { display: flex; gap: 12px; align-items: flex-start; }
+.res-flag {
+  width: 46px; height: 46px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0;
+}
+.res-main { flex: 1; min-width: 0; }
+.res-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.res-dates { font-size: 12px; color: var(--ocean); font-weight: 500; margin-top: 5px; }
+.res-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.res-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); }
+.badge {
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px; border-radius: 20px;
+  white-space: nowrap;
+}
+.badge-ok     { background: #D1FAE5; color: #065F46; }
+.badge-pend   { background: #FEF3C7; color: #92400E; }
+.badge-canc   { background: #FEE2E2; color: #991B1B; }
+.badge-airbnb { background: #FFE4E4; color: #FF385C; }
+.badge-indic  { background: #EDE9FE; color: #5B21B6; }
+.badge-olx    { background: #DCFCE7; color: #166534; }
+.badge-ical   { background: #DBEAFE; color: #1E40AF; }
+
+/* Action buttons */
+.res-actions { display: flex; gap: 6px; margin-top: 12px; }
+.act-btn {
+  flex: 1; padding: 9px 4px;
+  border-radius: var(--r-sm); border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+  transition: all 0.18s;
+}
+.act-btn:active { transform: scale(0.96); }
+.btn-wa  { background: #D1FAE5; color: #065F46; }
+.btn-wa:hover  { background: #059669; color: #fff; }
+.btn-ed  { background: #DBEAFE; color: #1D4ED8; }
+.btn-ed:hover  { background: var(--ocean); color: #fff; }
+.btn-pay { background: #FEF3C7; color: #92400E; }
+.btn-pay:hover { background: var(--coral); color: #fff; }
+.btn-del { background: #FEE2E2; color: #991B1B; }
+.btn-del:hover { background: var(--red); color: #fff; }
+
+/* ══════════════════════════════════════════
+   FINANCIAL SCREEN HERO
+══════════════════════════════════════════ */
+.fin-hero {
+  background: linear-gradient(145deg, #0a1628 0%, #0d2845 100%);
+  padding: 20px 20px 28px;
+  position: relative; overflow: hidden;
+  flex-shrink: 0;
+}
+.fin-hero::after {
+  content: '';
+  position: absolute; top: -80px; right: -60px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(0,180,216,0.15), transparent 70%);
+  border-radius: 50%;
+}
+.fin-hero-inner { position: relative; z-index: 1; }
+.fin-lbl { font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.fin-total { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 38px; color: #fff; line-height: 1; }
+.fin-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 6px; }
+.fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.fin-mini {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-md);
+  padding: 12px;
+}
+.fin-mini-lbl { font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
+.fin-mini-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: #fff; margin-top: 2px; }
+.fin-mini-val.g { color: var(--green); }
+.fin-mini-val.r { color: #ff6b6b; }
+
+/* Progress bars */
+.prog-section { background: var(--surface); border-radius: var(--r-lg); padding: 16px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
+.prog-row { margin-bottom: 14px; }
+.prog-row:last-child { margin-bottom: 0; }
+.prog-info { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+.prog-name { color: var(--text-2); font-weight: 500; }
+.prog-pct  { color: var(--text); font-weight: 700; font-family: 'Syne', sans-serif; }
+.prog-bar { height: 7px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+.pf-ocean { background: linear-gradient(90deg, var(--ocean), var(--ocean-light)); }
+.pf-green { background: linear-gradient(90deg, var(--green-dark), var(--green)); }
+.pf-coral { background: linear-gradient(90deg, var(--coral-dark), var(--coral)); }
+
+/* Pay list */
+.pay-row {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: 13px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid transparent;
+}
+.pay-row.received { border-color: var(--green); }
+.pay-row.pending  { border-color: var(--yellow); }
+.pay-row.missing  { border-color: var(--red); }
+.pay-info-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.pay-info-sub  { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+.pay-amt { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+.pay-amt.g { color: var(--green-dark); }
+.pay-amt.y { color: #92400E; }
+.pay-amt.r { color: var(--red); }
+
+/* ══════════════════════════════════════════
+   CONTACTS
+══════════════════════════════════════════ */
+.contact-card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.18s;
+  border: 1px solid var(--border);
+}
+.contact-card:hover { transform: translateX(4px); box-shadow: var(--shadow-md); }
+.c-ava {
+  width: 46px; height: 46px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
+  flex-shrink: 0;
+}
+.c-info { flex: 1; min-width: 0; }
+.c-name { font-weight: 600; font-size: 14px; color: var(--text); }
+.c-role { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.c-phone { font-size: 11px; color: var(--ocean); margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+.c-wa-btn {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: #D1FAE5; display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0;
+  transition: all 0.18s;
+}
+.c-wa-btn:hover { background: #059669; }
+
+.bulk-btn {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, #059669, #06D6A0);
+  color: #fff; border: none; border-radius: var(--r-lg);
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 6px 20px rgba(6,214,160,0.35);
+  transition: all 0.2s;
+}
+.bulk-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(6,214,160,0.45); }
+.bulk-btn:active { transform: scale(0.98); }
+
+/* ══════════════════════════════════════════
+   SETTINGS / CONFIG
+══════════════════════════════════════════ */
+.set-item {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all 0.18s;
+}
+.set-item:hover { border-color: var(--ocean); }
+.set-left { display: flex; align-items: center; gap: 12px; }
+.set-ico { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.set-t { font-size: 14px; font-weight: 500; color: var(--text); }
+.set-s { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.set-arr { color: var(--text-3); font-size: 18px; }
+
+.plan-card {
+  background: linear-gradient(135deg, var(--ocean), var(--ocean-light));
+  border-radius: var(--r-lg);
+  padding: 20px;
+  color: #fff;
+}
+.plan-card-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; }
+.plan-card-sub { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+.plan-card-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 28px; margin-top: 14px; }
+.plan-card-price span { font-size: 13px; font-weight: 400; opacity: 0.7; }
+.plan-card-next { font-size: 11px; opacity: 0.55; margin-top: 6px; }
+
+/* ══════════════════════════════════════════
+   MODAL / OVERLAY
+══════════════════════════════════════════ */
+.modal-overlay {
+  position: absolute; inset: 0;
+  background: rgba(10,22,40,0.7);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end;
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  width: 100%;
+  background: var(--surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: 20px 20px 40px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  max-height: 85%;
+  overflow-y: auto;
+}
+.modal-sheet::-webkit-scrollbar { display: none; }
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 20px; }
+.modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 20px; }
+
+/* Form */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.3px; }
+.form-input, .form-select {
+  width: 100%; padding: 12px 14px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--text);
+  outline: none; transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.form-input:focus, .form-select:focus { border-color: var(--ocean); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-primary {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--ocean), var(--ocean-light));
+  color: #fff; border: none; border-radius: var(--r-md);
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+  cursor: pointer; margin-top: 8px;
+  box-shadow: 0 6px 20px rgba(0,119,182,0.35);
+  transition: all 0.2s;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,119,182,0.45); }
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+#toast {
+  position: absolute; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: #fff;
+  padding: 11px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.32,0.72,0,1);
+  white-space: nowrap; z-index: 200;
+  max-width: calc(100% - 40px);
+  text-align: center;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* FAB */
+.fab {
+  position: absolute; bottom: 80px; right: 16px;
+  width: 52px; height: 52px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+  border: none; color: #fff; font-size: 26px;
+  box-shadow: 0 8px 24px rgba(244,116,59,0.45);
+  cursor: pointer; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.fab:hover { transform: scale(1.08) translateY(-2px); }
+.fab:active { transform: scale(0.96); }
+
+/* ══════════════════════════════════════════
+   LOADING & EMPTY STATES
+══════════════════════════════════════════ */
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 48px 24px; gap: 12px; color: var(--text-3);
+}
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--ocean);
+  animation: spin 0.8s linear infinite;
+}
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 24px; gap: 8px; color: var(--text-3);
+  text-align: center;
+}
+.empty-icon { font-size: 48px; margin-bottom: 4px; }
+.empty-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--text-2); }
+.empty-sub { font-size: 13px; line-height: 1.5; }
+
+/* ══════════════════════════════════════════
+   AIRBNB SYNC BANNER
+══════════════════════════════════════════ */
+.sync-banner {
+  margin: 12px 16px 0;
+  background: linear-gradient(135deg, #fff7ed, #fff);
+  border: 1.5px solid #fed7aa;
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: #92400E;
+}
+.sync-banner-ico { font-size: 20px; flex-shrink: 0; }
+.sync-banner-text { flex: 1; }
+.sync-banner-text strong { display: block; font-weight: 600; }
+.sync-banner-btn {
+  padding: 6px 12px; border-radius: 8px;
+  background: var(--coral); color: #fff;
+  border: none; font-size: 11px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* DETAIL VIEW inside modal */
+.detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.detail-row:last-child { border-bottom: none; }
+.detail-lbl { font-size: 12px; color: var(--text-3); }
+.detail-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
+
+/* WA message modal */
+.wa-template-btn {
+  width: 100%; padding: 12px 14px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--r-md); text-align: left; cursor: pointer;
+  margin-bottom: 8px; transition: all 0.18s;
+  font-family: 'DM Sans', sans-serif;
+}
+.wa-template-btn:hover { border-color: #25D366; background: #D1FAE5; }
+.wa-template-btn .wt-title { font-weight: 600; font-size: 13px; color: var(--text); }
+.wa-template-btn .wt-prev { font-size: 11px; color: var(--text-3); margin-top: 3px; line-height: 1.4; }
+
+/* responsive for desktop */
+@media (min-width: 500px) {
+  html, body { background: linear-gradient(160deg, #0a1628 0%, #0d2845 60%, #0077B6 100%); }
+}
+</style>
+</head>
+<body>
+<div id="root">
+<div class="phone-shell">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time" id="clock">9:41</span>
+    <div class="icons"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- App Body -->
+  <div class="app-body">
+
+    <!-- ══ SCREEN: INÍCIO ══ -->
+    <div class="screen active" id="scr-home">
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="hero-top">
+            <div class="logo">Aluga<em>Fácil</em></div>
+            <div class="hero-actions">
+              <div class="sync-chip" id="syncChip" onclick="triggerSync()">
+                <div class="sync-dot" id="syncDot"></div>
+                <span id="syncLabel">Airbnb</span>
+              </div>
+              <div class="avatar-btn">M</div>
+            </div>
+          </div>
+          <div class="hero-greeting">Olá, Marcos 👋 • Canasvieiras</div>
+          <div class="hero-title" id="heroTitle">Seus Imóveis</div>
+          <div class="hero-sub" id="heroSub">🏖️ Apto Canasvieiras, Florianópolis</div>
+          <div class="stat-row" id="statsRow">
+            <div class="stat-pill"><div class="stat-pill-val" id="statRes">—</div><div class="stat-pill-lbl">Reservas</div></div>
+            <div class="stat-pill"><div class="stat-pill-val g" id="statFat">—</div><div class="stat-pill-lbl">Faturado</div></div>
+            <div class="stat-pill"><div class="stat-pill-val c" id="statOcc">—</div><div class="stat-pill-lbl">Ocupação</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen-scroll">
+        <!-- Sync banner (hidden by default) -->
+        <div class="sync-banner" id="syncBanner" style="display:none;">
+          <div class="sync-banner-ico">📅</div>
+          <div class="sync-banner-text">
+            <strong>Calendário Airbnb sincronizado!</strong>
+            <span id="syncBannerMsg">Reservas atualizadas.</span>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="sec" style="margin-top:14px;">
+          <div class="sec-head">
+            <div class="sec-title" id="calMonthTitle">📅 Calendário</div>
+            <div class="sec-action" onclick="navigateMonth(1)">Próximo ›</div>
+          </div>
+          <div class="cal-strip" id="calStrip">
+            <div class="loading-state"><div class="spinner"></div></div>
+          </div>
+          <div class="cal-legend">
+            <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--ocean)"></div>Ocupado</div>
+            <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--green)"></div>Check-in</div>
+            <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--coral)"></div>Checkout</div>
+            <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--border)"></div>Livre</div>
+          </div>
+        </div>
+
+        <!-- Reservas -->
+        <div class="sec" style="margin-top:16px;">
+          <div class="sec-head">
+            <div class="sec-title">🧳 Reservas</div>
+            <div class="sec-action" onclick="openModal('modalNovaReserva')">+ Nova</div>
+          </div>
+          <div class="filter-row" id="filterRow">
+            <div class="chip on" onclick="filterBy('todas',this)">Todas</div>
+            <div class="chip" onclick="filterBy('airbnb',this)">Airbnb</div>
+            <div class="chip" onclick="filterBy('indicacao',this)">Indicação</div>
+            <div class="chip" onclick="filterBy('olx',this)">OLX</div>
+            <div class="chip" onclick="filterBy('pendente',this)">⚠ Pendentes</div>
+          </div>
+          <div id="reservasList">
+            <div class="loading-state"><div class="spinner"></div><span>Carregando reservas...</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAB -->
+      <button class="fab" onclick="openModal('modalNovaReserva')">＋</button>
+    </div>
+
+    <!-- ══ SCREEN: FINANCEIRO ══ -->
+    <div class="screen" id="scr-financeiro">
+      <div class="fin-hero">
+        <div class="fin-hero-inner">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div class="logo" style="color:#fff;">Aluga<em style="color:var(--ocean-light)">Fácil</em></div>
+          </div>
+          <div class="fin-lbl">Total da Temporada</div>
+          <div class="fin-total" id="finTotal">R$ —</div>
+          <div class="fin-sub" id="finSub">Calculando...</div>
+          <div class="fin-grid">
+            <div class="fin-mini"><div class="fin-mini-lbl">Recebido</div><div class="fin-mini-val g" id="finRecebido">—</div></div>
+            <div class="fin-mini"><div class="fin-mini-lbl">Pendente</div><div class="fin-mini-val r" id="finPendente">—</div></div>
+            <div class="fin-mini"><div class="fin-mini-lbl">Média/noite</div><div class="fin-mini-val" id="finMedia">—</div></div>
+            <div class="fin-mini"><div class="fin-mini-lbl">Total diárias</div><div class="fin-mini-val" id="finDiarias">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen-scroll">
+        <div class="sec" style="margin-top:14px;">
+          <div class="sec-title" style="margin-bottom:10px;">📊 Ocupação por Mês</div>
+          <div class="prog-section" id="occupancyBars"></div>
+        </div>
+        <div class="sec" style="margin-top:8px;">
+          <div class="sec-head">
+            <div class="sec-title">💳 Pagamentos</div>
+          </div>
+          <div id="paymentsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: CONTATOS ══ -->
+    <div class="screen" id="scr-contatos">
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="hero-top">
+            <div class="logo">Aluga<em>Fácil</em></div>
+            <div class="avatar-btn">M</div>
+          </div>
+          <div class="hero-title">Contatos</div>
+          <div class="hero-sub">Hóspedes & Prestadores de Serviço</div>
+        </div>
+      </div>
+      <div class="screen-scroll">
+        <div class="sec" style="margin-top:14px;">
+          <div class="sec-head">
+            <div class="sec-title">🧹 Prestadores</div>
+            <div class="sec-action" onclick="openModal('modalNovoPrestador')">+ Add</div>
+          </div>
+          <div id="prestadoresList"></div>
+        </div>
+        <div class="sec" style="margin-top:4px;">
+          <div class="sec-head">
+            <div class="sec-title">🧳 Últimos Hóspedes</div>
+          </div>
+          <div id="hospedesList"></div>
+        </div>
+        <div class="sec" style="margin-top:8px; padding-bottom:20px;">
+          <button class="bulk-btn" onclick="sendBulkWhatsApp()">
+            📣 Avisar Todos os Prestadores
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: CONFIG ══ -->
+    <div class="screen" id="scr-config">
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="hero-top">
+            <div class="logo">Aluga<em>Fácil</em></div>
+            <div class="avatar-btn">M</div>
+          </div>
+          <div class="hero-title">Configurações</div>
+          <div class="hero-sub" id="lastSyncLabel">Último sync: —</div>
+        </div>
+      </div>
+      <div class="screen-scroll">
+        <div class="sec" style="margin-top:14px;">
+          <div class="sec-title" style="margin-bottom:10px;">🔗 Integrações</div>
+          <div class="set-item" onclick="triggerSync()">
+            <div class="set-left">
+              <div class="set-ico" style="background:#FFE4E4;">🏠</div>
+              <div><div class="set-t">Airbnb iCal</div><div class="set-s" id="icalStatus">Sincronizando...</div></div>
+            </div>
+            <span style="font-size:11px;background:#D1FAE5;color:#065F46;padding:4px 10px;border-radius:99px;font-weight:600;" id="icalBadge">✓ Ativo</span>
+          </div>
+          <div class="set-item" onclick="openModal('modalWhatsAppConfig')">
+            <div class="set-left">
+              <div class="set-ico" style="background:#D1FAE5;">💬</div>
+              <div><div class="set-t">WhatsApp</div><div class="set-s">Configurar número e mensagens</div></div>
+            </div>
+            <span class="set-arr">›</span>
+          </div>
+          <div class="set-item" onclick="toast('Em breve: Google Calendar!')">
+            <div class="set-left">
+              <div class="set-ico" style="background:#FEF3C7;">📅</div>
+              <div><div class="set-t">Google Calendar</div><div class="set-s">Em breve</div></div>
+            </div>
+            <span class="set-arr">›</span>
+          </div>
+        </div>
+        <div class="sec" style="margin-top:8px;">
+          <div class="sec-title" style="margin-bottom:10px;">🏠 Meu Imóvel</div>
+          <div class="set-item" onclick="openModal('modalImovel')">
+            <div class="set-left">
+              <div class="set-ico" style="background:#DBEAFE;">📍</div>
+              <div><div class="set-t">Endereço & Detalhes</div><div class="set-s" id="imovelDesc">Canasvieiras, Florianópolis</div></div>
+            </div>
+            <span class="set-arr">›</span>
+          </div>
+          <div class="set-item" onclick="toast('Regras salvas!')">
+            <div class="set-left">
+              <div class="set-ico" style="background:#EDE9FE;">💰</div>
+              <div><div class="set-t">Preços & Regras</div><div class="set-s">Diária mín/máx, check-in/out</div></div>
+            </div>
+            <span class="set-arr">›</span>
+          </div>
+          <div class="set-item" onclick="toast('Notificações configuradas!')">
+            <div class="set-left">
+              <div class="set-ico" style="background:#FEE2E2;">🔔</div>
+              <div><div class="set-t">Notificações</div><div class="set-s">Nova reserva, check-in, pag.</div></div>
+            </div>
+            <span class="set-arr">›</span>
+          </div>
+        </div>
+        <div class="sec" style="margin-top:8px; padding-bottom:20px;">
+          <div class="sec-title" style="margin-bottom:10px;">📦 Plano</div>
+          <div class="plan-card">
+            <div class="plan-card-title">Plano Pro 🚀</div>
+            <div class="plan-card-sub">1 imóvel • Sync Airbnb • WhatsApp ilimitado</div>
+            <div class="plan-card-price">R$ 29,90<span>/mês</span></div>
+            <div class="plan-card-next">Próxima cobrança: 01 Mai 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-body -->
+
+  <!-- ══ BOTTOM NAV ══ -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="goTo('home')">
+      <span class="nav-ico">🏠</span><span class="nav-lbl">Início</span><div class="nav-pip"></div>
+    </button>
+    <button class="nav-btn" id="nav-financeiro" onclick="goTo('financeiro')">
+      <span class="nav-ico">💰</span><span class="nav-lbl">Financeiro</span><div class="nav-pip"></div>
+    </button>
+    <button class="nav-btn" id="nav-contatos" onclick="goTo('contatos')">
+      <span class="nav-ico">👥</span><span class="nav-lbl">Contatos</span><div class="nav-pip"></div>
+    </button>
+    <button class="nav-btn" id="nav-config" onclick="goTo('config')">
+      <span class="nav-ico">⚙️</span><span class="nav-lbl">Config</span><div class="nav-pip"></div>
+    </button>
+  </nav>
+
+  <!-- ══ MODALS ══ -->
+
+  <!-- Modal: Nova Reserva -->
+  <div class="modal-overlay" id="modalNovaReserva" onclick="closeOnBg(event,'modalNovaReserva')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="modalResTitle">Nova Reserva</div>
+      <input type="hidden" id="editResId">
+      <div class="form-group">
+        <label class="form-label">Nome do Hóspede</label>
+        <input class="form-input" id="fNome" placeholder="Ex: Sara González">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">País</label>
+          <select class="form-select" id="fPais">
+            <option value="🇧🇷 Brasil">🇧🇷 Brasil</option>
+            <option value="🇦🇷 Argentina">🇦🇷 Argentina</option>
+            <option value="🇨🇱 Chile">🇨🇱 Chile</option>
+            <option value="🇺🇾 Uruguai">🇺🇾 Uruguai</option>
+            <option value="🇵🇾 Paraguai">🇵🇾 Paraguai</option>
+            <option value="🇵🇪 Peru">🇵🇪 Peru</option>
+            <option value="🌍 Outro">🌍 Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plataforma</label>
+          <select class="form-select" id="fPlataforma">
+            <option value="airbnb">Airbnb</option>
+            <option value="indicacao">Indicação</option>
+            <option value="olx">OLX</option>
+            <option value="direto">Direto</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefone (WhatsApp)</label>
+        <input class="form-input" id="fTelefone" placeholder="Ex: 48 99999-9999" type="tel">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Adultos</label>
+          <input class="form-input" id="fAdultos" type="number" value="2" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Crianças</label>
+          <input class="form-input" id="fCriancas" type="number" value="0" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Check-in</label>
+          <input class="form-input" id="fCheckin" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Checkout</label>
+          <input class="form-input" id="fCheckout" type="date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Valor Total (R$)</label>
+          <input class="form-input" id="fValor" type="number" placeholder="0,00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor Pago (R$)</label>
+          <input class="form-input" id="fPago" type="number" placeholder="0,00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observações</label>
+        <input class="form-input" id="fObs" placeholder="Notas sobre a reserva...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="fStatus">
+          <option value="finalizado">✅ Finalizado / Confirmado</option>
+          <option value="pendente">⏳ Pendente</option>
+          <option value="cancelado">❌ Cancelado</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="salvarReserva()">💾 Salvar Reserva</button>
+    </div>
+  </div>
+
+  <!-- Modal: Detalhe Reserva -->
+  <div class="modal-overlay" id="modalDetalhe" onclick="closeOnBg(event,'modalDetalhe')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div id="detalheContent"></div>
+    </div>
+  </div>
+
+  <!-- Modal: WhatsApp -->
+  <div class="modal-overlay" id="modalWA" onclick="closeOnBg(event,'modalWA')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">💬 Enviar WhatsApp</div>
+      <div id="waReservaInfo" style="background:var(--surface2);border-radius:var(--r-md);padding:12px;margin-bottom:16px;font-size:13px;color:var(--text-2);"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:10px;">Escolha um template:</div>
+      <div id="waTemplates"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.3px;margin:14px 0 8px;">Ou escreva livremente:</div>
+      <textarea class="form-input" id="waMsgCustom" rows="3" placeholder="Digite sua mensagem..." style="resize:none;"></textarea>
+      <button class="btn-primary" onclick="sendCustomWA()" style="background:linear-gradient(135deg,#059669,#06D6A0);">
+        💬 Enviar pelo WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Novo Prestador -->
+  <div class="modal-overlay" id="modalNovoPrestador" onclick="closeOnBg(event,'modalNovoPrestador')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Novo Prestador</div>
+      <div class="form-group">
+        <label class="form-label">Nome</label>
+        <input class="form-input" id="pNome" placeholder="Ex: Ana Lima">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Função</label>
+        <select class="form-select" id="pFuncao">
+          <option value="🧹 Faxineira">🧹 Faxineira</option>
+          <option value="🔧 Manutenção">🔧 Manutenção</option>
+          <option value="🛏️ Lavanderia">🛏️ Lavanderia</option>
+          <option value="🔑 Porteiro">🔑 Porteiro</option>
+          <option value="🏊 Piscina">🏊 Piscina</option>
+          <option value="📦 Outro">📦 Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefone (WhatsApp)</label>
+        <input class="form-input" id="pTelefone" placeholder="Ex: 48 99999-9999" type="tel">
+      </div>
+      <button class="btn-primary" onclick="salvarPrestador()">💾 Salvar</button>
+    </div>
+  </div>
+
+  <!-- Modal: Config imovel -->
+  <div class="modal-overlay" id="modalImovel" onclick="closeOnBg(event,'modalImovel')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🏠 Meu Imóvel</div>
+      <div class="form-group">
+        <label class="form-label">Nome do imóvel</label>
+        <input class="form-input" id="imNome" value="Apto Canasvieiras">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Endereço</label>
+        <input class="form-input" id="imEnd" value="Canasvieiras, Florianópolis, SC">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Link iCal Airbnb</label>
+        <input class="form-input" id="imIcal" value="https://www.airbnb.com/calendar/ical/2296033.ics?t=6fe8886a4dba4992ba34480522de39fa" style="font-size:11px;font-family:'JetBrains Mono',monospace;">
+      </div>
+      <button class="btn-primary" onclick="salvarImovel()">💾 Salvar</button>
+    </div>
+  </div>
+
+  <!-- Modal: WhatsApp Config -->
+  <div class="modal-overlay" id="modalWhatsAppConfig" onclick="closeOnBg(event,'modalWhatsAppConfig')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">💬 WhatsApp</div>
+      <div style="background:#D1FAE5;border-radius:var(--r-md);padding:14px;margin-bottom:16px;">
+        <div style="font-weight:600;font-size:13px;color:#065F46;margin-bottom:4px;">✅ Como funciona</div>
+        <div style="font-size:12px;color:#065F46;line-height:1.5;">O app abre o WhatsApp com a mensagem pronta. Você confirma e envia. Para envio 100% automático, configure a Evolution API no seu servidor Railway.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Seu número (com DDD)</label>
+        <input class="form-input" id="waNumero" placeholder="48 99999-9999" type="tel">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Evolution API (opcional)</label>
+        <input class="form-input" id="waApiUrl" placeholder="https://sua-api.railway.app">
+      </div>
+      <button class="btn-primary" onclick="salvarWAConfig()">💾 Salvar Config</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+</div><!-- /phone-shell -->
+</div><!-- /root -->
+
+<script>
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+const ICAL_URL = 'https://www.airbnb.com/calendar/ical/2296033.ics?t=6fe8886a4dba4992ba34480522de39fa&locale=pt';
+// CORS proxy para buscar o iCal no browser
+const PROXY    = 'https://corsproxy.io/?';
+
+let state = {
+  reservas: [],
+  prestadores: [
+    { id:1, nome:'Ana Lima',      funcao:'🧹 Faxineira',  telefone:'48991110001' },
+    { id:2, nome:'Roberto Alves', funcao:'🔧 Manutenção', telefone:'48991110002' },
+    { id:3, nome:'Carla Souza',   funcao:'🛏️ Lavanderia', telefone:'48991110003' },
+  ],
+  icalReservas: [],
+  currentFilter: 'todas',
+  calOffset: 0,  // months offset from now
+  lastSync: null,
+  loading: true,
+};
+
+/* ══════════════════════════════════════════
+   CLOCK
+══════════════════════════════════════════ */
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' +
+    now.getMinutes().toString().padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function goTo(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('scr-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+  if (tab === 'financeiro') renderFinancial();
+  if (tab === 'contatos')   renderContatos();
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function closeOnBg(e, id) {
+  if (e.target === e.currentTarget) closeModal(id);
+}
+
+/* ══════════════════════════════════════════
+   iCAL PARSER  (handles VCALENDAR/VEVENT)
+══════════════════════════════════════════ */
+function parseIcal(text) {
+  const events = [];
+  const blocks = text.split('BEGIN:VEVENT');
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i];
+    const get = (key) => {
+      const m = block.match(new RegExp(key + '[^:]*:([^\\r\\n]*)'));
+      return m ? m[1].trim() : '';
+    };
+    const uid     = get('UID');
+    const summary = get('SUMMARY');
+    const dtstart = get('DTSTART');
+    const dtend   = get('DTEND');
+    if (!dtstart || !dtend) continue;
+    const parseDate = d => {
+      // Format YYYYMMDD or YYYYMMDDTHHMMSSZ
+      const s = d.replace(/[T\-:Z]/g,'').substring(0,8);
+      return new Date(+s.slice(0,4), +s.slice(4,6)-1, +s.slice(6,8));
+    };
+    events.push({
+      uid,
+      nome: summary || 'Reserva Airbnb',
+      inicio: parseDate(dtstart),
+      fim: parseDate(dtend),
+      plataforma: 'airbnb',
+      fonte: 'ical',
+    });
+  }
+  return events;
+}
+
+/* ══════════════════════════════════════════
+   AIRBNB SYNC
+══════════════════════════════════════════ */
+async function triggerSync() {
+  const chip = document.getElementById('syncChip');
+  const lbl  = document.getElementById('syncLabel');
+  chip.classList.add('syncing');
+  lbl.textContent = 'Sincronizando...';
+
+  try {
+    const resp = await fetch(PROXY + encodeURIComponent(ICAL_URL));
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const parsed = parseIcal(text);
+
+    // Merge: don't overwrite manual reservas
+    const existingUids = new Set(state.icalReservas.map(r => r.uid));
+    let added = 0;
+    for (const ev of parsed) {
+      if (!ev.uid || existingUids.has(ev.uid)) continue;
+      // Skip "blocked" / "Not available" entries
+      if (ev.nome.toLowerCase().includes('blocked') || ev.nome.toLowerCase().includes('not available')) continue;
+      state.icalReservas.push({
+        id: 'ical_' + ev.uid,
+        uid: ev.uid,
+        nome: ev.nome,
+        pais: '🌍 Airbnb',
+        telefone: '',
+        adultos: '—',
+        criancas: 0,
+        plataforma: 'airbnb',
+        fonte: 'ical',
+        inicio: ev.inicio,
+        fim: ev.fim,
+        dias: Math.round((ev.fim - ev.inicio) / 86400000),
+        valor: 0,
+        pago: 0,
+        status: 'finalizado',
+        obs: 'Importado do Airbnb iCal',
+      });
+      added++;
+    }
+
+    state.lastSync = new Date();
+    document.getElementById('lastSyncLabel').textContent =
+      'Último sync: ' + state.lastSync.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('icalStatus').textContent =
+      'Sincronizado às ' + state.lastSync.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+    // Show banner
+    const banner = document.getElementById('syncBanner');
+    document.getElementById('syncBannerMsg').textContent =
+      added > 0 ? `${added} nova(s) reserva(s) importada(s)!` : 'Calendário atualizado. Nenhuma novidade.';
+    banner.style.display = 'flex';
+    setTimeout(() => banner.style.display = 'none', 5000);
+
+    toast(`✅ Airbnb sincronizado! ${parsed.length} eventos`);
+    mergeAndRender();
+  } catch (err) {
+    console.error(err);
+    // Load demo data if fetch fails (CORS or network)
+    loadDemoData();
+    toast('⚠️ Demo mode: dados de exemplo carregados');
+  }
+
+  chip.classList.remove('syncing');
+  lbl.textContent = 'Airbnb';
+}
+
+/* ══════════════════════════════════════════
+   DEMO DATA  (used when iCal fetch fails)
+══════════════════════════════════════════ */
+function loadDemoData() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+
+  state.reservas = [
+    { id:1,  nome:'Marcos Viana',    pais:'🇧🇷 Brasil',    telefone:'48991234567', adultos:5, criancas:0, plataforma:'airbnb',   inicio:new Date(y,m-4,20), fim:new Date(y,m-4,23), dias:3,  valor:620,  pago:620,  status:'finalizado', obs:'Primeira temporada', fonte:'manual' },
+    { id:2,  nome:'Danielle Costa',  pais:'🇧🇷 Brasil',    telefone:'48991234568', adultos:3, criancas:0, plataforma:'indicacao', inicio:new Date(y,m-3,4),  fim:new Date(y,m-3,7),  dias:3,  valor:800,  pago:800,  status:'finalizado', obs:'',  fonte:'manual' },
+    { id:3,  nome:'Javiera Morales', pais:'🇨🇱 Chile',     telefone:'',            adultos:5, criancas:0, plataforma:'airbnb',   inicio:new Date(y,m-3,10), fim:new Date(y,m-3,17), dias:7,  valor:1488, pago:1488, status:'finalizado', obs:'', fonte:'manual' },
+    { id:4,  nome:'Leonardo Silva',  pais:'🇧🇷 Brasil',    telefone:'48991234570', adultos:3, criancas:1, plataforma:'airbnb',   inicio:new Date(y,m-2,20), fim:new Date(y,m-2,28), dias:8,  valor:2527, pago:2527, status:'finalizado', obs:'', fonte:'manual' },
+    { id:5,  nome:'Michele Souza',   pais:'🇧🇷 Brasil',    telefone:'48991234571', adultos:2, criancas:0, plataforma:'indicacao', inicio:new Date(y,m-2,29), fim:new Date(y,m-1,14), dias:16, valor:6200, pago:6200, status:'finalizado', obs:'Hóspede antigo', fonte:'manual' },
+    { id:6,  nome:'Rita Fernandes',  pais:'🇧🇷 Brasil',    telefone:'48991234572', adultos:3, criancas:1, plataforma:'indicacao', inicio:new Date(y,m-1,14), fim:new Date(y,m-1,19), dias:5,  valor:2000, pago:1500, status:'pendente',   obs:'Falta R$500', fonte:'manual' },
+    { id:7,  nome:'Agustín López',   pais:'🇦🇷 Argentina', telefone:'',            adultos:2, criancas:0, plataforma:'airbnb',   inicio:new Date(y,m-1,19), fim:new Date(y,m-1,26), dias:7,  valor:2596, pago:2596, status:'finalizado', obs:'', fonte:'manual' },
+    { id:8,  nome:'Almir Pacheco',   pais:'🇧🇷 Brasil',    telefone:'48991234574', adultos:5, criancas:0, plataforma:'airbnb',   inicio:new Date(y,m-1,26), fim:new Date(y,m-1,30), dias:4,  valor:1718, pago:1718, status:'finalizado', obs:'', fonte:'manual' },
+    { id:9,  nome:'Samanta Reis',    pais:'🇧🇷 Brasil',    telefone:'48991234575', adultos:2, criancas:1, plataforma:'airbnb',   inicio:new Date(y,m-1,30), fim:new Date(y,m,2),    dias:2,  valor:906,  pago:906,  status:'finalizado', obs:'', fonte:'manual' },
+    { id:10, nome:'Yesica Morales',  pais:'🇦🇷 Argentina', telefone:'',            adultos:2, criancas:3, plataforma:'airbnb',   inicio:new Date(y,m,1),    fim:new Date(y,m,14),   dias:13, valor:3626, pago:3626, status:'finalizado', obs:'', fonte:'manual' },
+    { id:11, nome:'Martin Vargas',   pais:'🇦🇷 Argentina', telefone:'',            adultos:2, criancas:0, plataforma:'airbnb',   inicio:new Date(y,m,15),   fim:new Date(y,m,22),   dias:7,  valor:2295, pago:2295, status:'finalizado', obs:'TV sem YouTube', fonte:'manual' },
+    { id:12, nome:'Vanderlei Costa', pais:'🇧🇷 Brasil',    telefone:'48991234578', adultos:5, criancas:0, plataforma:'indicacao', inicio:new Date(y,m,22),   fim:new Date(y,m+1,3),  dias:9,  valor:2300, pago:2100, status:'pendente',   obs:'Falta R$200', fonte:'manual' },
+    { id:13, nome:'Facundo Ríos',    pais:'🇦🇷 Argentina', telefone:'',            adultos:4, criancas:1, plataforma:'airbnb',   inicio:new Date(y,m+1,3),  fim:new Date(y,m+1,11), dias:8,  valor:2068, pago:2068, status:'finalizado', obs:'', fonte:'manual' },
+    { id:14, nome:'Sara González',   pais:'🇦🇷 Argentina', telefone:'',            adultos:2, criancas:0, plataforma:'airbnb',   inicio:new Date(y,m+1,12), fim:new Date(y,m+1,17), dias:5,  valor:1193, pago:1193, status:'finalizado', obs:'', fonte:'manual' },
+    { id:15, nome:'Fernanda Gomes',  pais:'🇦🇷 Argentina', telefone:'',            adultos:2, criancas:2, plataforma:'airbnb',   inicio:new Date(y,m+1,8),  fim:new Date(y,m+1,17), dias:9,  valor:2400, pago:0,    status:'cancelado',  obs:'Cancelado pelo hóspede', fonte:'manual' },
+  ];
+  mergeAndRender();
+}
+
+/* ══════════════════════════════════════════
+   MERGE iCal + Manual, RENDER
+══════════════════════════════════════════ */
+function mergeAndRender() {
+  // Combine manual + ical, avoid duplicates by id
+  const all = [...state.reservas, ...state.icalReservas];
+  // Normalize dates
+  all.forEach(r => {
+    if (!(r.inicio instanceof Date)) r.inicio = new Date(r.inicio);
+    if (!(r.fim instanceof Date))    r.fim    = new Date(r.fim);
+  });
+  state._all = all;
+  updateStats(all);
+  renderCalendar();
+  renderReservas(all, state.currentFilter);
+}
+
+/* ══════════════════════════════════════════
+   STATS
+══════════════════════════════════════════ */
+function updateStats(all) {
+  const active = all.filter(r => r.status !== 'cancelado');
+  const total  = active.reduce((s,r) => s + (+r.valor||0), 0);
+  const dias   = active.reduce((s,r) => s + (+r.dias||0), 0);
+  // Occupancy: ratio of occupied days to total days in dataset window
+  const pct = dias > 0 ? Math.min(100, Math.round(dias / 120 * 100)) : 0;
+
+  document.getElementById('statRes').textContent = active.length;
+  document.getElementById('statFat').textContent = fmtBRL(total, true);
+  document.getElementById('statOcc').textContent = pct + '%';
+}
+
+/* ══════════════════════════════════════════
+   CALENDAR STRIP
+══════════════════════════════════════════ */
+const DAYS_PT  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function navigateMonth(dir) {
+  state.calOffset += dir;
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const all  = state._all || [];
+  const base = new Date();
+  base.setMonth(base.getMonth() + state.calOffset);
+  const year  = base.getFullYear();
+  const month = base.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date();
+
+  document.getElementById('calMonthTitle').textContent =
+    '📅 ' + MONTHS_PT[month] + ' ' + year;
+
+  // Build occupied day map
+  const occMap = {}; // day -> { status, guestName }
+  for (const r of all) {
+    if (r.status === 'cancelado') continue;
+    const s = new Date(r.inicio); s.setHours(0,0,0,0);
+    const e = new Date(r.fim);    e.setHours(0,0,0,0);
+    for (let d = new Date(s); d < e; d.setDate(d.getDate()+1)) {
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        const day = d.getDate();
+        const isCheckin  = d.getTime() === s.getTime();
+        const isCheckout = new Date(d.getTime() + 86400000).getTime() === e.getTime() && !isCheckin;
+        occMap[day] = {
+          type: isCheckin ? 'checkin' : (isCheckout ? 'checkout' : 'occ'),
+          guest: r.nome.split(' ')[0],
+        };
+      }
+    }
+  }
+
+  let html = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month, d);
+    const isToday = dt.toDateString() === today.toDateString();
+    const occ = occMap[d];
+    let cls = 'cal-cell';
+    if (occ) cls += ' ' + occ.type;
+    if (isToday && !occ) cls += ' today';
+    const guestHtml = occ ? `<div class="cal-g">${occ.guest}</div>` : '';
+    html += `<div class="${cls}" onclick="calDayClick(${d},${month},${year})">
+      <div class="cal-n">${DAYS_PT[dt.getDay()]}</div>
+      <div class="cal-d">${d}</div>
+      ${guestHtml}
+    </div>`;
+  }
+  document.getElementById('calStrip').innerHTML = html;
+  // Scroll to today if current month
+  if (state.calOffset === 0) {
+    setTimeout(() => {
+      const strip = document.getElementById('calStrip');
+      const todayIdx = today.getDate() - 1;
+      const cell = strip.children[todayIdx];
+      if (cell) cell.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    }, 100);
+  }
+}
+
+function calDayClick(d, m, y) {
+  const all = state._all || [];
+  const dt = new Date(y, m, d);
+  const res = all.find(r => {
+    if (r.status === 'cancelado') return false;
+    const s = new Date(r.inicio); s.setHours(0,0,0,0);
+    const e = new Date(r.fim);    e.setHours(0,0,0,0);
+    return dt >= s && dt < e;
+  });
+  if (res) openDetalhe(res);
+}
+
+/* ══════════════════════════════════════════
+   FILTER
+══════════════════════════════════════════ */
+function filterBy(filter, el) {
+  state.currentFilter = filter;
+  document.querySelectorAll('.filter-row .chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  renderReservas(state._all || [], filter);
+}
+
+/* ══════════════════════════════════════════
+   RESERVA CARDS
+══════════════════════════════════════════ */
+function fmtBRL(v, short=false) {
+  if (!v && v !== 0) return '—';
+  const n = +v;
+  if (short && n >= 1000) return 'R$' + (n/1000).toFixed(1).replace('.',',') + 'k';
+  return 'R$' + n.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = d instanceof Date ? d : new Date(d);
+  return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+}
+
+function flagFor(pais) {
+  const p = (pais||'').toLowerCase();
+  if (p.includes('brasil') || p.includes('br')) return {emoji:'🇧🇷',bg:'#D1FAE5'};
+  if (p.includes('argentina') || p.includes('ar')) return {emoji:'🇦🇷',bg:'#DBEAFE'};
+  if (p.includes('chile') || p.includes('cl')) return {emoji:'🇨🇱',bg:'#FEF3C7'};
+  if (p.includes('uruguai')) return {emoji:'🇺🇾',bg:'#D1FAE5'};
+  if (p.includes('paraguai')) return {emoji:'🇵🇾',bg:'#FEE2E2'};
+  return {emoji:'🌍',bg:'#F3F4F6'};
+}
+
+function badgePlat(p) {
+  if (!p) return '';
+  if (p==='airbnb')    return '<span class="badge badge-airbnb">Airbnb</span>';
+  if (p==='indicacao') return '<span class="badge badge-indic">Indicação</span>';
+  if (p==='olx')       return '<span class="badge badge-olx">OLX</span>';
+  if (p==='ical')      return '<span class="badge badge-ical">iCal</span>';
+  return `<span class="badge badge-indic">${p}</span>`;
+}
+
+function badgeStatus(s, pago, total) {
+  const falta = (+total||0) - (+pago||0);
+  if (s === 'cancelado') return '<span class="badge badge-canc">✕ Cancelado</span>';
+  if (falta > 0) return `<span class="badge badge-pend">⚠ Falta ${fmtBRL(falta)}</span>`;
+  return '<span class="badge badge-ok">✓ Pago</span>';
+}
+
+function renderReservas(all, filter) {
+  let list = [...all];
+  if (filter === 'airbnb')   list = list.filter(r => r.plataforma === 'airbnb');
+  if (filter === 'indicacao') list = list.filter(r => r.plataforma === 'indicacao');
+  if (filter === 'olx')      list = list.filter(r => r.plataforma === 'olx');
+  if (filter === 'pendente') list = list.filter(r => (+r.valor||0) - (+r.pago||0) > 0 && r.status !== 'cancelado');
+
+  // Sort: upcoming first, then by date desc
+  const now = new Date();
+  list.sort((a,b) => {
+    const ai = new Date(a.inicio), bi = new Date(b.inicio);
+    const af = ai >= now, bf = bi >= now;
+    if (af && !bf) return -1;
+    if (!af && bf) return 1;
+    return af ? ai - bi : bi - ai;
+  });
+
+  if (!list.length) {
+    document.getElementById('reservasList').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🏖️</div>
+        <div class="empty-title">Nenhuma reserva</div>
+        <div class="empty-sub">Toque em + para adicionar ou sincronize com o Airbnb</div>
+      </div>`;
+    return;
+  }
+
+  const html = list.map((r, i) => {
+    const flag = flagFor(r.pais);
+    const delay = Math.min(i * 0.04, 0.4);
+    const isIcal = r.fonte === 'ical';
+    const hasPhone = r.telefone && r.telefone.length > 5;
+    return `<div class="res-card" style="animation-delay:${delay}s" onclick="openDetalhe(${JSON.stringify({...r, inicio: r.inicio?.toISOString?.() ?? r.inicio, fim: r.fim?.toISOString?.() ?? r.fim}).replace(/'/g,"&#39;")})">
+      <div class="res-top">
+        <div class="res-flag" style="background:${flag.bg}">${flag.emoji}</div>
+        <div class="res-main">
+          <div class="res-name">${r.nome}</div>
+          <div class="res-meta">${r.pais||''} • ${r.adultos} adulto${r.adultos!=1?'s':''}${r.criancas>0?' • '+r.criancas+' criança'+(r.criancas!=1?'s':''):''}</div>
+          <div class="res-dates">${fmtDate(r.inicio)} → ${fmtDate(r.fim)} • ${r.dias} noite${r.dias!=1?'s':''}</div>
+        </div>
+        <div class="res-right">
+          <div class="res-val">${r.valor ? fmtBRL(r.valor) : '—'}</div>
+          ${badgeStatus(r.status, r.pago, r.valor)}
+          ${badgePlat(r.plataforma)}
+        </div>
+      </div>
+      <div class="res-actions">
+        <button class="act-btn btn-wa" onclick="event.stopPropagation();openWA('${r.id}')" ${!hasPhone && !isIcal ? 'title="Sem telefone"' : ''}>
+          💬 Whats${!hasPhone && !isIcal ? '*' : ''}
+        </button>
+        <button class="act-btn btn-ed" onclick="event.stopPropagation();editReserva('${r.id}')">✏️ Editar</button>
+        <button class="act-btn btn-pay" onclick="event.stopPropagation();regPagamento('${r.id}')">💰 Pag.</button>
+        <button class="act-btn btn-del" onclick="event.stopPropagation();delReserva('${r.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('reservasList').innerHTML = html;
+}
+
+/* ══════════════════════════════════════════
+   DETALHE MODAL
+══════════════════════════════════════════ */
+function openDetalhe(r) {
+  if (typeof r === 'string') r = JSON.parse(r);
+  if (typeof r === 'object' && r !== null && 'inicio' in r) {
+    r.inicio = r.inicio instanceof Date ? r.inicio : new Date(r.inicio);
+    r.fim    = r.fim    instanceof Date ? r.fim    : new Date(r.fim);
+  }
+  const flag = flagFor(r.pais);
+  const falta = (+r.valor||0) - (+r.pago||0);
+  const html = `
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;">
+      <div class="res-flag" style="background:${flag.bg};width:52px;height:52px;font-size:30px;">${flag.emoji}</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;">${r.nome}</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:2px;">${r.pais||''} • ${badgePlat(r.plataforma)}</div>
+      </div>
+    </div>
+    <div class="detail-row"><span class="detail-lbl">Check-in</span><span class="detail-val">${fmtDate(r.inicio)}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Checkout</span><span class="detail-val">${fmtDate(r.fim)}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Noites</span><span class="detail-val">${r.dias}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Hóspedes</span><span class="detail-val">${r.adultos} adultos${r.criancas>0?', '+r.criancas+' crianças':''}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Valor Total</span><span class="detail-val">${fmtBRL(r.valor)}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Pago</span><span class="detail-val" style="color:var(--green-dark)">${fmtBRL(r.pago)}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Saldo</span><span class="detail-val" style="color:${falta>0?'var(--red)':'var(--green-dark)'}">${falta>0?'Falta '+fmtBRL(falta):'✓ Quitado'}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Telefone</span><span class="detail-val">${r.telefone||'—'}</span></div>
+    ${r.obs ? `<div class="detail-row"><span class="detail-lbl">Observações</span><span class="detail-val" style="text-align:right;max-width:200px;">${r.obs}</span></div>` : ''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;">
+      <button class="act-btn btn-wa" style="padding:12px;" onclick="closeModal('modalDetalhe');openWA('${r.id}')">💬 WhatsApp</button>
+      <button class="act-btn btn-ed" style="padding:12px;" onclick="closeModal('modalDetalhe');editReserva('${r.id}')">✏️ Editar</button>
+    </div>
+  `;
+  document.getElementById('detalheContent').innerHTML = html;
+  openModal('modalDetalhe');
+}
+
+/* ══════════════════════════════════════════
+   CRUD RESERVAS
+══════════════════════════════════════════ */
+function openNovaReserva() {
+  document.getElementById('modalResTitle').textContent = 'Nova Reserva';
+  document.getElementById('editResId').value = '';
+  ['fNome','fTelefone','fObs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fAdultos').value = 2;
+  document.getElementById('fCriancas').value = 0;
+  document.getElementById('fValor').value = '';
+  document.getElementById('fPago').value = '';
+  openModal('modalNovaReserva');
+}
+
+function editReserva(id) {
+  const all = [...state.reservas, ...state.icalReservas];
+  const r = all.find(x => String(x.id) === String(id));
+  if (!r) return;
+  document.getElementById('modalResTitle').textContent = 'Editar Reserva';
+  document.getElementById('editResId').value = id;
+  document.getElementById('fNome').value = r.nome || '';
+  document.getElementById('fPais').value = r.pais || '🇧🇷 Brasil';
+  document.getElementById('fPlataforma').value = r.plataforma || 'airbnb';
+  document.getElementById('fTelefone').value = r.telefone || '';
+  document.getElementById('fAdultos').value = r.adultos || 1;
+  document.getElementById('fCriancas').value = r.criancas || 0;
+  const fmt = d => { if (!d) return ''; const dt = d instanceof Date?d:new Date(d); return dt.toISOString().slice(0,10); };
+  document.getElementById('fCheckin').value  = fmt(r.inicio);
+  document.getElementById('fCheckout').value = fmt(r.fim);
+  document.getElementById('fValor').value = r.valor || '';
+  document.getElementById('fPago').value  = r.pago || '';
+  document.getElementById('fObs').value   = r.obs || '';
+  document.getElementById('fStatus').value = r.status || 'finalizado';
+  openModal('modalNovaReserva');
+}
+
+function salvarReserva() {
+  const nome = document.getElementById('fNome').value.trim();
+  if (!nome) { toast('⚠ Informe o nome do hóspede'); return; }
+  const checkin  = document.getElementById('fCheckin').value;
+  const checkout = document.getElementById('fCheckout').value;
+  if (!checkin || !checkout) { toast('⚠ Informe as datas'); return; }
+
+  const inicio = new Date(checkin  + 'T12:00:00');
+  const fim    = new Date(checkout + 'T12:00:00');
+  const dias   = Math.round((fim - inicio) / 86400000);
+  const editId = document.getElementById('editResId').value;
+
+  const data = {
+    nome,
+    pais:       document.getElementById('fPais').value,
+    plataforma: document.getElementById('fPlataforma').value,
+    telefone:   document.getElementById('fTelefone').value.replace(/\D/g,''),
+    adultos:    +document.getElementById('fAdultos').value,
+    criancas:   +document.getElementById('fCriancas').value,
+    inicio, fim, dias,
+    valor:  +document.getElementById('fValor').value || 0,
+    pago:   +document.getElementById('fPago').value  || 0,
+    obs:    document.getElementById('fObs').value,
+    status: document.getElementById('fStatus').value,
+    fonte: 'manual',
+  };
+
+  if (editId) {
+    const idx = state.reservas.findIndex(r => String(r.id) === String(editId));
+    if (idx >= 0) { state.reservas[idx] = {...state.reservas[idx], ...data}; }
+    else {
+      const iidx = state.icalReservas.findIndex(r => String(r.id) === String(editId));
+      if (iidx >= 0) state.icalReservas[iidx] = {...state.icalReservas[iidx], ...data};
+    }
+    toast('✅ Reserva atualizada!');
+  } else {
+    data.id = Date.now();
+    state.reservas.push(data);
+    toast('✅ Reserva criada!');
+  }
+
+  closeModal('modalNovaReserva');
+  mergeAndRender();
+}
+
+function delReserva(id) {
+  if (!confirm('Excluir esta reserva?')) return;
+  state.reservas = state.reservas.filter(r => String(r.id) !== String(id));
+  state.icalReservas = state.icalReservas.filter(r => String(r.id) !== String(id));
+  mergeAndRender();
+  toast('🗑 Reserva removida');
+}
+
+function regPagamento(id) {
+  const all = [...state.reservas, ...state.icalReservas];
+  const r = all.find(x => String(x.id) === String(id));
+  if (!r) return;
+  const v = prompt(`Registrar pagamento para ${r.nome}\nValor total: ${fmtBRL(r.valor)}\nJá pago: ${fmtBRL(r.pago)}\n\nNovo valor pago total (R$):`);
+  if (v === null) return;
+  const novo = +v;
+  if (isNaN(novo)) { toast('⚠ Valor inválido'); return; }
+
+  const update = rr => { if (String(rr.id)===String(id)) { rr.pago = novo; if(novo >= (+rr.valor||0)) rr.status='finalizado'; } return rr; };
+  state.reservas = state.reservas.map(update);
+  state.icalReservas = state.icalReservas.map(update);
+  mergeAndRender();
+  toast('💰 Pagamento registrado: ' + fmtBRL(novo));
+}
+
+/* ══════════════════════════════════════════
+   WHATSAPP
+══════════════════════════════════════════ */
+let _waCurrentRes = null;
+
+function openWA(id) {
+  const all = [...state.reservas, ...state.icalReservas];
+  const r = all.find(x => String(x.id) === String(id));
+  if (!r) return;
+  _waCurrentRes = r;
+
+  document.getElementById('waReservaInfo').innerHTML =
+    `<strong>${r.nome}</strong> • ${fmtDate(r.inicio)} → ${fmtDate(r.fim)}` +
+    (r.telefone ? `<br>📱 +55 ${r.telefone}` : '<br><span style="color:var(--coral)">⚠ Sem telefone cadastrado. Edite a reserva para adicionar.</span>');
+
+  const templates = [
+    {
+      title: '👋 Boas-vindas + Confirmação',
+      prev: 'Confirmação de reserva com endereço e horários...',
+      msg: `Olá ${r.nome}! 👋\n\nSua reserva no Apto Canasvieiras está confirmada.\n\n📅 Check-in: ${fmtDate(r.inicio)} a partir das 14h\n📅 Checkout: ${fmtDate(r.fim)} até as 11h\n📍 Canasvieiras, Florianópolis - SC\n\nQualquer dúvida é só chamar! 🏖️`
+    },
+    {
+      title: '⏰ Lembrete de Checkout',
+      prev: 'Lembrete para amanhã + instruções de saída...',
+      msg: `Olá ${r.nome}! ☀️\n\nLembrete: amanhã ${fmtDate(r.fim)} é o dia do checkout até as 11h.\n\nPor favor deixe as chaves na portaria.\n\nFoi um prazer ter você aqui! Volte sempre 🌊⭐`
+    },
+    {
+      title: '💰 Cobrança de Saldo',
+      prev: 'Aviso de saldo pendente + dados para pagamento...',
+      msg: `Olá ${r.nome}, tudo bem?\n\nPassando para avisar que há um saldo pendente de ${fmtBRL((+r.valor||0)-(+r.pago||0))} referente à sua estadia em Canasvieiras.\n\nChave Pix: (seu-pix-aqui)\n\nQualquer dúvida estou à disposição! 🙏`
+    },
+    {
+      title: '⭐ Pedir Avaliação Airbnb',
+      prev: 'Solicitar avaliação 5 estrelas...',
+      msg: `Olá ${r.nome}! 😊\n\nEsperamos que tenha curtido a estadia em Canasvieiras!\n\nSe puder nos avaliar no Airbnb ficamos muito gratos — isso ajuda muito outros viajantes a nos encontrar. ⭐⭐⭐⭐⭐\n\nAté a próxima! 🏖️`
+    },
+  ];
+
+  document.getElementById('waTemplates').innerHTML = templates.map((t,i) => `
+    <button class="wa-template-btn" onclick="selectTemplate(${i})">
+      <div class="wt-title">${t.title}</div>
+      <div class="wt-prev">${t.prev}</div>
+    </button>
+  `).join('');
+  window._waTemplates = templates;
+  document.getElementById('waMsgCustom').value = '';
+  openModal('modalWA');
+}
+
+function selectTemplate(i) {
+  const t = window._waTemplates[i];
+  document.getElementById('waMsgCustom').value = t.msg;
+  document.querySelectorAll('.wa-template-btn').forEach((b,j) => {
+    b.style.borderColor = j===i ? '#25D366' : '';
+    b.style.background  = j===i ? '#D1FAE5' : '';
+  });
+}
+
+function sendCustomWA() {
+  const r = _waCurrentRes;
+  const msg = document.getElementById('waMsgCustom').value.trim();
+  if (!msg) { toast('⚠ Escreva uma mensagem'); return; }
+
+  const phone = r?.telefone ? '55' + r.telefone.replace(/\D/g,'') : '';
+  const url = phone
+    ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+  window.open(url, '_blank');
+  closeModal('modalWA');
+  toast('💬 Abrindo WhatsApp...');
+}
+
+/* ══════════════════════════════════════════
+   FINANCIAL
+══════════════════════════════════════════ */
+function renderFinancial() {
+  const all = (state._all || []).filter(r => r.status !== 'cancelado');
+  const total   = all.reduce((s,r) => s + (+r.valor||0), 0);
+  const receb   = all.reduce((s,r) => s + (+r.pago||0), 0);
+  const pend    = all.reduce((s,r) => s + Math.max(0,(+r.valor||0)-(+r.pago||0)), 0);
+  const noites  = all.reduce((s,r) => s + (+r.dias||0), 0);
+  const media   = noites > 0 ? total/noites : 0;
+
+  document.getElementById('finTotal').textContent    = fmtBRL(total);
+  document.getElementById('finSub').textContent      = `${all.length} reservas • ${noites} diárias`;
+  document.getElementById('finRecebido').textContent = fmtBRL(receb);
+  document.getElementById('finPendente').textContent = fmtBRL(pend);
+  document.getElementById('finMedia').textContent    = fmtBRL(media);
+  document.getElementById('finDiarias').textContent  = noites + ' noites';
+
+  // Occupancy by month
+  const monthMap = {};
+  const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
+  for (const r of all) {
+    const m = new Date(r.inicio).getMonth();
+    const lbl = MONTHS_PT[m].substring(0,3);
+    if (!monthMap[lbl]) monthMap[lbl] = {dias:0, max: DAYS_IN_MONTH[m]};
+    monthMap[lbl].dias += (+r.dias||0);
+  }
+  const bars = Object.entries(monthMap).slice(-6).map(([lbl,{dias,max}]) => {
+    const pct = Math.min(100, Math.round(dias/max*100));
+    const cls = pct >= 80 ? 'pf-green' : pct >= 50 ? 'pf-ocean' : 'pf-coral';
+    return `<div class="prog-row">
+      <div class="prog-info"><span class="prog-name">${lbl}</span><span class="prog-pct">${pct}%</span></div>
+      <div class="prog-bar"><div class="prog-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('occupancyBars').innerHTML = bars || '<div style="padding:16px;color:var(--text-3);font-size:13px;">Nenhum dado ainda</div>';
+
+  // Payments list
+  const sorted = [...all].sort((a,b) => new Date(b.inicio)-new Date(a.inicio));
+  const payHtml = sorted.map(r => {
+    const falta = (+r.valor||0)-(+r.pago||0);
+    const cls = falta > 0 ? 'pending' : 'received';
+    const amtCls = falta > 0 ? 'y' : 'g';
+    const fmtPago = fmtBRL(r.pago);
+    const fmtTotal = fmtBRL(r.valor);
+    return `<div class="pay-row ${cls}">
+      <div>
+        <div class="pay-info-name">${r.nome}</div>
+        <div class="pay-info-sub">${fmtDate(r.inicio)} → ${fmtDate(r.fim)} • ${badgePlat(r.plataforma)}</div>
+        ${falta>0?`<div class="pay-info-sub" style="color:var(--red);">⚠ Falta ${fmtBRL(falta)}</div>`:''}
+      </div>
+      <div class="pay-amt ${amtCls}">${falta>0?fmtPago+'/'+fmtTotal:'+'+fmtPago}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('paymentsList').innerHTML = payHtml ||
+    '<div class="empty-state"><div class="empty-icon">💸</div><div class="empty-title">Sem dados</div></div>';
+}
+
+/* ══════════════════════════════════════════
+   CONTATOS
+══════════════════════════════════════════ */
+const COLORS = ['#DBEAFE:#1E40AF','#D1FAE5:#065F46','#EDE9FE:#5B21B6','#FEF3C7:#92400E','#FEE2E2:#991B1B'];
+function avatarStyle(i) {
+  const [bg,color] = COLORS[i % COLORS.length].split(':');
+  return `background:${bg};color:${color}`;
+}
+function initials(name) {
+  return (name||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function renderContatos() {
+  // Prestadores
+  const prestHtml = state.prestadores.map((p,i) => `
+    <div class="contact-card" onclick="openWAPrestador(${p.id})">
+      <div class="c-ava" style="${avatarStyle(i)}">${initials(p.nome)}</div>
+      <div class="c-info">
+        <div class="c-name">${p.nome}</div>
+        <div class="c-role">${p.funcao}</div>
+        <div class="c-phone">${p.telefone ? '+55 '+p.telefone : 'Sem telefone'}</div>
+      </div>
+      <div class="c-wa-btn">💬</div>
+    </div>`).join('');
+  document.getElementById('prestadoresList').innerHTML = prestHtml ||
+    '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">Nenhum prestador</div></div>';
+
+  // Últimos hóspedes (últimas 6 reservas não canceladas)
+  const hospedes = (state._all || [])
+    .filter(r => r.status !== 'cancelado')
+    .sort((a,b) => new Date(b.inicio)-new Date(a.inicio))
+    .slice(0,6);
+  const hospHtml = hospedes.map((r,i) => {
+    const flag = flagFor(r.pais);
+    return `<div class="contact-card" onclick="openWA('${r.id}')">
+      <div class="c-ava" style="background:${flag.bg}">${flag.emoji}</div>
+      <div class="c-info">
+        <div class="c-name">${r.nome}</div>
+        <div class="c-role">${r.pais||''} • ${fmtDate(r.inicio)} → ${fmtDate(r.fim)}</div>
+        <div class="c-phone">${r.telefone ? '+55 '+r.telefone : 'Sem telefone'}</div>
+      </div>
+      <div class="c-wa-btn">💬</div>
+    </div>`;
+  }).join('');
+  document.getElementById('hospedesList').innerHTML = hospHtml ||
+    '<div class="empty-state"><div class="empty-icon">🧳</div><div class="empty-title">Nenhum hóspede</div></div>';
+}
+
+function openWAPrestador(id) {
+  const p = state.prestadores.find(x => x.id === id);
+  if (!p || !p.telefone) { toast('⚠ Sem telefone cadastrado'); return; }
+
+  // Get next checkin/checkout for context
+  const next = (state._all||[]).find(r => r.status!=='cancelado' && new Date(r.inicio) > new Date());
+  const msg = next
+    ? `Oi ${p.nome.split(' ')[0]}! 🧹\nPreciso avisar sobre o apartamento:\n\n📅 Checkout: ${fmtDate(next.inicio)}\n📅 Check-in novo: ${fmtDate(next.fim)}\n\nPode confirmar disponibilidade? Obrigado!`
+    : `Oi ${p.nome.split(' ')[0]}! Tudo bem?\nPassando para agendar uma visita ao apartamento de Canasvieiras. Pode me chamar quando tiver disponibilidade! 🙏`;
+
+  const phone = '55' + p.telefone.replace(/\D/g,'');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  toast('💬 Abrindo WhatsApp...');
+}
+
+function sendBulkWhatsApp() {
+  const withPhone = state.prestadores.filter(p => p.telefone);
+  if (!withPhone.length) { toast('⚠ Nenhum prestador com telefone'); return; }
+  const next = (state._all||[]).find(r => r.status!=='cancelado' && new Date(r.inicio) > new Date());
+  let count = 0;
+  withPhone.forEach((p, i) => {
+    setTimeout(() => {
+      const msg = next
+        ? `Oi ${p.nome.split(' ')[0]}! 👋\nAviso sobre o Apto Canasvieiras:\n📅 Próxima entrada: ${fmtDate(next.inicio)}\nPor favor confirme disponibilidade!`
+        : `Oi ${p.nome.split(' ')[0]}! Tudo bem com o apto de Canasvieiras?`;
+      window.open(`https://wa.me/55${p.telefone}?text=${encodeURIComponent(msg)}`, '_blank');
+      count++;
+    }, i * 600);
+  });
+  toast(`📣 Abrindo WhatsApp para ${withPhone.length} contato(s)...`);
+}
+
+/* ══════════════════════════════════════════
+   PRESTADORES CRUD
+══════════════════════════════════════════ */
+function salvarPrestador() {
+  const nome = document.getElementById('pNome').value.trim();
+  if (!nome) { toast('⚠ Informe o nome'); return; }
+  state.prestadores.push({
+    id: Date.now(),
+    nome,
+    funcao: document.getElementById('pFuncao').value,
+    telefone: document.getElementById('pTelefone').value.replace(/\D/g,''),
+  });
+  document.getElementById('pNome').value = '';
+  document.getElementById('pTelefone').value = '';
+  closeModal('modalNovoPrestador');
+  renderContatos();
+  toast('✅ Prestador adicionado!');
+}
+
+/* ══════════════════════════════════════════
+   CONFIG SAVES
+══════════════════════════════════════════ */
+function salvarImovel() {
+  const nome = document.getElementById('imNome').value;
+  const end  = document.getElementById('imEnd').value;
+  document.getElementById('imovelDesc').textContent = end;
+  document.getElementById('heroSub').textContent = '🏖️ ' + end;
+  closeModal('modalImovel');
+  toast('✅ Imóvel salvo!');
+}
+
+function salvarWAConfig() {
+  closeModal('modalWhatsAppConfig');
+  toast('✅ Config WhatsApp salva!');
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+async function init() {
+  // Show loading state
+  document.getElementById('statRes').textContent = '...';
+  document.getElementById('statFat').textContent = '...';
+  document.getElementById('statOcc').textContent = '...';
+
+  // Try to sync Airbnb first
+  await triggerSync();
+
+  // If no ical data loaded (fetch failed), demo data already loaded
+  if (!state._all || !state._all.length) {
+    loadDemoData();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
